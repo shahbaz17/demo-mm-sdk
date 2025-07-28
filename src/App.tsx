@@ -7,10 +7,17 @@ import { MetaMaskSDK, type SDKProvider } from "@metamask/sdk";
 import { useEffect, useState } from "react";
 
 const MMSDK = new MetaMaskSDK({
+  checkInstallationImmediately: false,
+  checkInstallationOnAllCalls: false,
   dappMetadata: {
     name: "MetaMask SDK Demo",
     url: window.location.href,
+    iconUrl: "https://docs.metamask.io/img/metamask-logo.svg",
   },
+  // defaultReadOnlyChainId: 11155111,
+  // enableAnalytics: true,
+  // extensionOnly: false,
+  // headless: false,
   infuraAPIKey: import.meta.env.VITE_INFURA_API_KEY,
 });
 
@@ -33,7 +40,7 @@ function App() {
   };
 
   const getBalance = async () => {
-    if (!account) {
+    if (!account || !provider) {
       return;
     }
     const result = await provider?.request({
@@ -44,6 +51,21 @@ function App() {
     const balance = (await Number(decimal)) / 10 ** 18;
     console.log(balance.toFixed(4));
     setBalance(balance);
+  };
+
+  const batchRequest = async () => {
+    if (!account || !provider) {
+      return;
+    }
+    const batchResults = await provider.request({
+      method: "metamask_batch",
+      params: [
+        { method: "eth_accounts" },
+        { method: "eth_getBalance", params: [account, "latest"] },
+        { method: "eth_chainId" },
+      ],
+    });
+    console.log(batchResults);
   };
 
   const terminate = async () => {
@@ -73,6 +95,7 @@ function App() {
             <p>Connected to {account}</p>
             {balance && <p>Balance: {balance?.toFixed(4)} Sepolia ETH</p>}
             <button onClick={getBalance}>Get Balance</button>
+            <button onClick={batchRequest}>Batch Request</button>
             <button onClick={terminate}>Disconnect</button>
           </>
         ) : (

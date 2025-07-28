@@ -44,3 +44,7 @@
 .underline:hover {
   text-decoration: underline;
 }
+
+button {
+  margin: 10px;
+}
